@@ -39,6 +39,10 @@ class Interpreter(object):
 
     def error(self):
         raise Exception('Error parsing input')
+    
+    def skip_whitespace(self):
+        while self.pos < len(self.text) and self.text[self.pos].isspace():
+            self.pos += 1
 
     def get_next_token(self):
         """Lexical analyzer (also known as scanner or tokenizer)
@@ -53,6 +57,9 @@ class Interpreter(object):
         # input left to convert into tokens
         if self.pos > len(text) - 1:
             return Token(EOF, None)
+        
+        # skip any whitespace characters and advance to the next position
+        self.skip_whitespace()
 
         # get a character at the position self.pos and decide
         # what token to create based on the single character
