@@ -108,48 +108,42 @@ class Interpreter(object):
     def expr(self):
         """Parser / Interpreter
 
-        expr -> INTEGER PLUS INTEGER
-        expr -> INTEGER MINUS INTEGER
-        expr -> INTEGER MULTIPLY INTEGER
-        expr -> INTEGER DIVIDE INTEGER
+        expr can be any mathmatical expression using MULTIPLY, PLUS, MINUS, DIVIDE
         """
         # set current token to the first token taken from the input
         self.current_token = self.get_next_token()
+        integer_tokens = []
+        op_tokens = []
 
-        # we expect the current token to be an integer
-        left = self.current_token
-        self.eat(INTEGER)
-
-        # we expect the current token to be either a '+', '-', '*' or '/'
-        op = self.current_token
-        if op.type == PLUS:
-            self.eat(PLUS)
-        elif op.type == MINUS:
-            self.eat(MINUS)
-        elif op.type == MULTIPLY:
-            self.eat(MULTIPLY)
-        else:
-            self.eat(DIVIDE)
-
-        # we expect the current token to be an integer
-        right = self.current_token
-        self.eat(INTEGER)
-        # after the above call the self.current_token is set to
-        # EOF token
-
-        # at this point either the INTEGER PLUS INTEGER or
-        # the INTEGER MINUS INTEGER sequence of tokens
-        # has been successfully found and the method can just
-        # return the result of adding or subtracting two integers,
-        # thus effectively interpreting client input
-        if op.type == PLUS:
-            result = left.value + right.value
-        elif op.type == MINUS:
-            result = left.value - right.value
-        elif op.type == MULTIPLY:
-            result = left.value * right.value
-        else:
-            result = left.value / right.value
+        # continue to concume tokens and create a list of both INTEGER
+        # and opperation tokens until EOF token is found
+        while self.current_token.type != EOF:
+            token = self.current_token
+            if token.type == INTEGER:
+                integer_tokens.append(token)
+                self.eat(INTEGER)
+            else:
+                op_tokens.append(token)
+                self.eat(token.type)
+                
+        # parse collected tokens to create mathmatical results
+        # keep going until there are both no more opperations or
+        # integer tokens left
+        while len(integer_tokens) > 1 and op_tokens:
+            left = integer_tokens.pop(0)
+            op = op_tokens.pop(0)
+            right = integer_tokens.pop(0)
+            if op.type == PLUS:
+                result = left.value + right.value
+            elif op.type == MINUS:
+                result = left.value - right.value
+            elif op.type == MULTIPLY:
+                result = left.value * right.value
+            else:
+                result = left.value / right.value
+                
+            if op_tokens:
+                integer_tokens.insert(0, Token(INTEGER, int(result)))
         return result
 
 
